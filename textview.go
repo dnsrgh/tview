@@ -223,6 +223,12 @@ type TextView struct {
 	// operation.
 	toggleHighlights bool
 
+	// The background color for highlighted text.
+	highlightedBackground tcell.Color
+
+	// The foreground color for highlighted text.
+	highlightedTextColor tcell.Color
+
 	// An optional function which is called when the content of the text view
 	// has changed.
 	changed func()
@@ -243,17 +249,19 @@ type TextView struct {
 // NewTextView returns a new text view.
 func NewTextView() *TextView {
 	return &TextView{
-		Box:        NewBox(),
-		labelStyle: tcell.StyleDefault.Foreground(Styles.SecondaryTextColor),
-		highlights: make(map[string]struct{}),
-		lineOffset: -1,
-		scrollable: true,
-		align:      AlignLeft,
-		wrap:       true,
-		wordWrap:   true,
-		textStyle:  tcell.StyleDefault.Background(Styles.PrimitiveBackgroundColor).Foreground(Styles.PrimaryTextColor),
-		regionTags: false,
-		styleTags:  false,
+		Box:                   NewBox(),
+		labelStyle:            tcell.StyleDefault.Foreground(Styles.SecondaryTextColor),
+		highlights:            make(map[string]struct{}),
+		lineOffset:            -1,
+		scrollable:            true,
+		align:                 AlignLeft,
+		wrap:                  true,
+		wordWrap:              true,
+		textStyle:             tcell.StyleDefault.Background(Styles.PrimitiveBackgroundColor).Foreground(Styles.PrimaryTextColor),
+		regionTags:            false,
+		styleTags:             false,
+		highlightedBackground: Styles.PrimaryTextColor,
+		highlightedTextColor:  Styles.PrimitiveBackgroundColor,
 	}
 }
 
@@ -708,6 +716,28 @@ func (t *TextView) GetHighlights() (regionIDs []string) {
 func (t *TextView) SetToggleHighlights(toggle bool) *TextView {
 	t.toggleHighlights = toggle
 	return t
+}
+
+// SetHighlightedBackground sets the background color for highlighted regions.
+func (t *TextView) SetHighlightedBackground(color tcell.Color) *TextView {
+	t.highlightedBackground = color
+	return t
+}
+
+// GetHighlightedBackground returns the background color for highlighted regions.
+func (t *TextView) GetHighlightedBackground() tcell.Color {
+	return t.highlightedBackground
+}
+
+// SetHighlightedTextColor sets the foreground color for highlighted regions.
+func (t *TextView) SetHighlightedTextColor(color tcell.Color) *TextView {
+	t.highlightedTextColor = color
+	return t
+}
+
+// GetHighlightedTextColor returns the foreground color for highlighted regions.
+func (t *TextView) GetHighlightedTextColor() tcell.Color {
+	return t.highlightedTextColor
 }
 
 // ScrollToHighlight will cause the visible area to be scrolled so that the
@@ -1247,7 +1277,7 @@ func (t *TextView) Draw(screen tcell.Screen) {
 					}
 				}
 				if highlighted {
-					fg, bg, _ := style.Decompose()
+					fg, bg := t.highlightedBackground, t.highlightedTextColor
 					if bg == t.backgroundColor {
 						r, g, b := fg.RGB()
 						c := colorful.Color{R: float64(r) / 255, G: float64(g) / 255, B: float64(b) / 255}
