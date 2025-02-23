@@ -179,6 +179,10 @@ type TextView struct {
 	// The index of the first line shown in the text view.
 	lineOffset int
 
+	// If set to true, the text view will automatically track the end of the content
+	// when the end is reached (e.g. while scrolling).
+	autoTrackEnd bool
+
 	// If set to true, the text view will always remain at the end of the
 	// content when text is added.
 	trackEnd bool
@@ -316,6 +320,16 @@ func (t *TextView) SetScrollable(scrollable bool) *TextView {
 	if !scrollable {
 		t.trackEnd = true
 	}
+	return t
+}
+
+// SetAutoTrackEnd sets the flag that decides whether or not the text view should
+// automatically track the end of the content when new text is added. If true,
+// the text view will automatically scroll to the bottom when new text is added.
+// If false, the text view will maintain its current scroll position when new
+// text is added.
+func (t *TextView) SetAutoTrackEnd(autoTrackEnd bool) *TextView {
+	t.autoTrackEnd = autoTrackEnd
 	return t
 }
 
@@ -1173,7 +1187,7 @@ func (t *TextView) Draw(screen tcell.Screen) {
 	})
 
 	// Adjust line offset.
-	if t.trackEnd {
+	if t.autoTrackEnd && t.trackEnd {
 		t.parseAhead(width, func(lineNumber int, line *textViewLine) bool {
 			return false
 		})
